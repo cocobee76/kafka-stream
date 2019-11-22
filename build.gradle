@@ -1,0 +1,74 @@
+buildscript {
+    ext {
+        springBootVersion = '2.2.1.RELEASE'
+        avroPluginVersion = '0.17.0'
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("com.commercehub.gradle.plugin:gradle-avro-plugin:${avroPluginVersion}")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'war'
+apply plugin: 'com.commercehub.gradle.plugin.avro'
+
+group = 'io.tbal'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+ext {
+    springIntegrationCoreVersion = '5.1.7.RELEASE'
+    springCloudVersion = 'Greenwich.SR4'
+    kafkaAvroSerializerVersion = '5.3.0'
+    avroVersion = '1.9.1'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    mavenLocal()
+    maven { url "https://maven.repository.redhat.com/earlyaccess/all/" }
+    maven { url "http://repo.spring.io/release/" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-stream-binder-kafka', version: '2.2.1.RELEASE'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-stream-schema', version: '2.2.1.RELEASE'
+    implementation "org.springframework.integration:spring-integration-core:${springIntegrationCoreVersion}"
+    implementation "io.confluent:kafka-avro-serializer:${kafkaAvroSerializerVersion}"
+    implementation "org.apache.avro:avro:${avroVersion}"
+    implementation "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    testImplementation group: 'org.springframework.cloud', name: 'spring-cloud-stream-test-support', version: '2.2.1.RELEASE'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'io.projectreactor:reactor-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+avro {
+    createSetters = false
+    outputCharacterEncoding = "UTF-8"
+    fieldVisibility = "PRIVATE"
+}
+
+task generateAvro(type: com.commercehub.gradle.plugin.avro.GenerateAvroJavaTask) {
+    source("src/main/avro")
+}

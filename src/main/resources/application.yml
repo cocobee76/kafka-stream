@@ -1,0 +1,34 @@
+spring:
+  cloud:
+    stream:
+      default:
+        producer:
+          useNativeEncoding: true
+        consumer:
+          useNativeEncoding: true
+      bindings:
+        employee-in:
+          destination: employee-details
+          content-type: application/*+avro
+          group: group-1
+          concurrency: 3
+        employee-out:
+          destination: employee-details
+          content-type: application/*+avro
+      kafka:
+        binder:
+          brokers: localhost:9092
+          producer-properties:
+            key.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+            value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+            schema.registry.url: http://localhost:8081
+          consumer-properties:
+            key.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+            value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+            schema.registry.url: http://localhost:8081
+            specific.avro.reader: true
+          transaction:
+            producer:
+              compression-type: none
+  main:
+    web-application-type: reactive
